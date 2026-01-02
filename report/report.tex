@@ -1,0 +1,187 @@
+\documentclass[a4paper, twocolumn]{article}
+
+\usepackage[backend=biber]{biblatex}
+\addbibresource{./refs.bib}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{float}
+
+% Move title block up
+\setlength{\droptitle}{-3cm}
+
+% Make section spacing tighter
+\titlespacing*{\section}{0pt}{0.6em}{0.3em}
+
+\title{Enhancing Online Purchase Prediction: A Comparison of Supervised Learning and Behavioural Clustering}
+
+\author{
+Ane Novrup Larsen \\
+Nathasja Skov Fink Nielsen
+}
+
+\date{}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8em}
+
+\begin{document}
+
+\maketitle
+\vspace{-4.0em} % <-- reduces space between author block and next content
+
+\section{Abstract}
+E-commerce platforms attract large volumes of visitors, yet only a small fraction complete a purchase. This project is a comparative study focusing on whether segmenting visitors based on their navigational engagement can improve the accuracy of online purchase intent prediction using machine learning on session-level behavioural data. Using the Online Shoppers Purchasing Intention dataset, Logistic Regression, Decision Tree, and Random Forest classifiers are evaluated using standard classification and probability-based metrics. Finding the most promising model (Random Forest), we tune it before comparing it with the tuned model with cluster labels. The behavioural segmentation using clustering was done with K-Means. Through analysis and comparison, we found that clustering did not improve the accuracy, and we actually saw a minimal decrease in multiple metrics. In conclusion, a tuned Random Forest was the best prediction model of those we compared.
+
+\section{Introduction}
+
+E-commerce platforms attract many visitors, yet only a small proportion of sessions result in a completed purchase \parencite{McDowell2016Conversion}. This makes early identification of potential buyers valuable for supporting personalisation and targeted marketing. As a result, predicting online purchase intent has become an important application of machine learning.
+
+Modern e-commerce systems collect session-level behavioural data, such as navigation patterns, page visits, and time spent on content, which can be used by supervised learning models to predict purchase outcomes \parencite{Allenbrand2023Clickstream}. However, user behaviour varies significantly between sessions, and raw behavioural features may not fully capture these differences.
+
+One way to deal with this is to use unsupervised learning to group sessions that show similar patterns of interaction. Previous work by Huseynov et al. (2016) demonstrated that online shoppers can be segmented into distinct behavioural groups (e.g., 'browsers' vs. 'buyers') based on session metrics.\parencite{Huseynov2016Segmentation}. The idea in this project is to test whether using these behavioural groups as additional input to supervised models leads to better predictions of purchase intent.
+
+
+\section{Problem Formulation}
+E-commerce platforms collect detailed behavioural data from visitors, and this data is widely used in supervised machine learning models to predict whether a session will result in a purchase. While such models often achieve strong performance, they are primarily based on raw behavioural features and may therefore struggle to reflect meaningful differences in visitor behaviour.
+
+In practice, not all visitors interact with an online store in the same way. In some sessions, visitors primarily browse the website, whereas other sessions show more purchase-focused navigation. These differences suggest that visitor behaviour may contain underlying patterns that are not fully captured by individual session metrics alone.
+
+This project therefore evaluates whether behavioural segmentation using unsupervised clustering actually improves the accuracy of purchase intention prediction, compared to relying on raw behavioural features alone.
+
+\textbf{Research question:}
+
+Does segmenting online visitors based on their navigational engagement (Unsupervised Learning) improve the accuracy of predicting purchase intention (Supervised Learning) compared to using raw traffic metrics alone?
+
+\section{Methods}
+
+This study uses a comparative experimental design. We evaluate supervised classification models against a hybrid approach that integrates unsupervised clustering features, measuring performance differences.
+
+\subsection{Dataset}
+The project is based on the \textit{Online Shoppers Purchasing Intention} dataset from the UCI Machine Learning Repository \parencite{UCIOnlineShoppers}. The data consists of records from individual visits to an e-commerce website, where each record describes how a user interacted with the site during a visit. In this work, the task is to compare whether predicting if a visit resulted in a purchase or not, which is indicated by the Revenue variable, will have improved accuracy with the use of clusters to segment the visitors.
+
+The data is divided into training and test sets. Since sessions resulting in a purchase are relatively rare, stratified sampling is applied based on the target variable (Revenue) to ensure that both sets contain a similar proportion of purchasing and non-purchasing sessions. The data is split before any preprocessing or training is done.
+
+\subsection{Preprocessing}
+Numerical features are standardised with StandardScaler to ensure comparable scales across features, while categorical features are transformed using One-Hot Encoding. Preprocessing is integrated into the model pipelines so that all transformations are learned exclusively from the training data and applied consistently to the test data.
+
+\subsection{Supervised Learning}
+Three supervised learning models are used in this project: logistic regression, decision tree, and random forest. Logistic regression is included as a simple and interpretable baseline model, while decision trees allow the model to capture non-linear relationships in user behaviour. Random forest is included as a more robust ensemble model, as it combines multiple decision trees to improve generalisation and handle tabular data effectively.
+
+To allow for a fair comparison, all models are trained using the same preprocessing pipeline and evaluated on the same held-out test set with identical metrics. Based on this initial comparison, random forest showed the strongest performance and was therefore selected for further hyperparameter tuning before the final evaluation.
+
+\subsection{Unsupervised Learning (Behavioural Segmentation)}
+
+For the clustering we used K-Means. We first started with selecting the behavioural features such as pages visited (Administrative, ProductRelated etc), ProductRelated\_Duration, BounceRates, and PageValues. These columns were then used for the clustering algorithm and, after the preprocessing, we used the Elbow method\parencite{thorndike1953belongs} and silhouette score\parencite{rousseeuw1987silhouettes} to find the optimal number of clusters for our dataset.
+
+We also evaluated DBSCAN to investigate if the data contained non-convex (concave) clusters that the spherical assumption of K-Means might miss. However, DBSCAN resulted in 33.86\% noise with an epsilon of 0.5, while increasing epsilon merged the points into one big cluster, leading us to proceed with K-Means.
+
+After the clustering, we took the tuned model from supervised learning and added the K-Means clusters to the categorical features. Using the same tuned pipeline and evaluation function, we could then compare the resulting metrics with that of the tuned model without clusters.
+
+\section{Analysis}
+
+\subsection{Evaluation Metrics}
+
+To analyse whether the clustering improves the accuracy of predicting purchase intention, we made use of the metrics precision, recall, and F1-score to evaluate the model’s ability to correctly identify even minority customers with purchase intention, balance false positives and false negatives, and assess overall classification performance beyond accuracy.
+
+We utilized ROC-AUC to see how well the models differentiate between buyer and non-buyer independent of the decision threshold, and log-loss to quantify the uncertainty of the predictions, penalising confident but incorrect predictions.
+
+Finally, with the use of Youden's Index\parencite{youden1950index}, we found the optimal decision threshold for each model that maximizes the separation between the True Positive Rate and False Positive Rate. This optimization was important for handling the class imbalance (85/15 buy/no-buy ratio), since the default threshold of 0.5 often struggles to correctly identify the minority class.
+
+\begin{table*}[t]
+    \centering
+    \caption{Performance comparison of Baseline and Tuned Models}
+    \label{tab:model_comparison}
+    \begin{tabular}{lcccc}
+        \hline
+        \textbf{Metric} & \textbf{Logistic Reg.} & \textbf{Decision Tree} & \textbf{Random Forest} & \textbf{Tuned RF} \\
+        \hline
+        \multicolumn{5}{c}{\textit{Class 1 (Shoppers) Performance}} \\
+        Precision & 0.43 & 0.52 & \textbf{0.79} & 0.53 \\
+        Recall & 0.79 & 0.53 & 0.40 & \textbf{0.84} \\
+        F1-Score & 0.56 & 0.52 & 0.53 & \textbf{0.65} \\
+        \hline
+        \multicolumn{5}{c}{\textit{Overall Model Performance}} \\
+        Optimal Threshold & 0.4375 & 1.0000 & 0.5500 & 0.3961 \\
+        ROC-AUC & 0.8932 & 0.7195 & 0.9188 & \textbf{0.9224} \\
+        Log-Loss & 0.4559 & 5.3642 & \textbf{0.2575} & 0.2988 \\
+        \hline
+    \end{tabular}
+\end{table*}
+
+\subsection{Baseline and Tuned Supervised Model Evaluation}
+
+We compared baseline models of Logistic Regression, Decision Trees, and Random Forest and found that Random Forest has the highest ROC-AUC (0.92) and Precision (0.79), but only a Recall of 0.40 meaning that it is more conservative and does not accept buyers unless it is very sure. Although Logistic Regression found more buyers (Recall 0.79), it had too many false alarms (Precision 0.43). While the Decision Tree achieved higher recall (0.53) than the baseline Random Forest (0.40), it had a significantly higher log-loss (5.36) and lower ROC-AUC (0.71), indicating poor probability estimation and stability. For comparison metrics, see Table 1.
+
+We chose Random Forest because it is the most robust and accurate model, which aligns with our research question that focuses on the accuracy of predicting purchase intention.
+
+After tuning the Random Forest model, we found that the tuned model has lower precision (0.53) and log-loss (0.2987) than the untuned, the recall jumped from 0.40 to 0.84, and the threshold got much lower. Now, the model does not turn away as many difficult-to-spot buyers as it did before. The f1-score (from 0.53 to 0.65) also improved, which means that the model is mathematically better at balancing precision and recall. The ROC-AUC also saw a small increase of 0.0037.
+
+Comparing with the Logistic Regression model, the tuned Random Forest model was better in all metrics, showing that it has made up for the low recall before tuning while still being close to the untuned precision.
+
+\begin{table*}[t]
+    \centering
+    \caption{Performance comparison: Tuned Random Forest vs. Tuned Random Forest with Clusters}
+    \label{tab:rf_comparison}
+    \begin{tabular}{lcc}
+        \hline
+        \textbf{Metric} & \textbf{Tuned RF} & \textbf{Tuned RF + Clusters} \\
+        \hline
+        \multicolumn{3}{c}{\textit{Class 1 (Shoppers) Performance}} \\
+        Precision & \textbf{0.53} & 0.52 \\
+        Recall & \textbf{0.84} & 0.83 \\
+        F1-Score & \textbf{0.65} & 0.64 \\
+        \hline
+        \multicolumn{3}{c}{\textit{Overall Model Performance}} \\
+        Optimal Threshold & 0.3961 & 0.3949 \\
+        ROC-AUC & \textbf{0.9224} & 0.9209 \\
+        Log-Loss & \textbf{0.2988} & 0.3028 \\
+        \hline
+    \end{tabular}
+\end{table*}
+
+\subsection{Impact of Behavioural Segmentation}
+
+After adding the clusters to the data and running it through the tuned Random Forest pipeline, precision, recall, f1-score, and ROC-AUC decreased while the threshold and log-loss increased. Table 2 compares the scores from the model before and after adding clusters.
+
+Besides comparing the metrics, we also looked at feature importance in the two models. Here we found that top 9 was the same, with PageValues having a score of ~0.42 and the rest below 0.10, while the cluster features ranked 75-77 out of 78 features.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Top 10 Features Driving Purchase Prediction.png}
+    \caption{Tuned RF Feature Importance}
+    \label{fig:rf_features}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Top 10 Features Driving Purchase Prediction - Clusters.png}
+    \caption{Tuned RF + Clusters Feature Importance}
+    \label{fig:rf_cluster_features}
+\end{figure}
+
+\section{Findings}
+
+As detailed in the Analysis section, integrating the cluster labels into the Tuned Random Forest resulted in a decrease in performance across all key metrics: Recall dropped from 0.84 to 0.83, F1-score from 0.65 to 0.64, and ROC-AUC from 0.9224 to 0.9209.
+
+It seems that by adding the clusters that are based on the same behavioral metrics (e.g. PageValues, ProductRelated\_Duration) that the model already knows, we inject noise instead of helping the model as there was no information gain for Random Forest.
+
+Through our feature importance analysis, we found that the clustering has so little importance that the model is almost ignoring them. In a Random Forest, which selects a random subset of features for each split, the presence of "noise" variables (the clusters) increases the probability of excluding strong predictors like PageValues at critical splits, leading to the observed decline in predictive power.
+
+Based on these findings, we reject the model with clusters in favour of the Tuned Random Forest (without clusters). This model is able to identify most purchasing sessions (recall of 0.84) while still clearly separating purchasing and non-purchasing behaviour (ROC-AUC of 0.92).
+
+\section{Conclusion}
+
+Our research question was whether unsupervised behavioural segmentation (clustering) would capture latent user patterns and thereby improve the predictive accuracy of the supervised model.
+
+From our findings, we can conclude that clustering based on the same behavioural metrics does not improve the predictive accuracy. Rather, it introduced feature redundancy as it did not find any new relevant information in the clustering (low feature importance).
+
+We therefore select the Tuned Random Forest (without clusters) as the best of these models. This model effectively addresses the business goal of identifying rare purchase events, capturing 84\% of potential buyers (Recall). It also achieves this high coverage with significantly better Precision (0.53) than the Logistic Regression baseline (0.43). This means that the model is not simply guessing; it is correctly identifying high-intent users while minimizing the "spam" factor associated with less precise models.
+
+By rejecting the complex clustering step, we deliver a simpler but efficient prediction engine. This allows the e-commerce platform to target the right users with real-time interventions while avoiding wasted marketing resources on non-buyers.
+
+\printbibliography
+
+\end{document}

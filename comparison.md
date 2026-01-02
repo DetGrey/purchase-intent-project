@@ -30,19 +30,20 @@ Optimal Threshold: 0.3961
 ROC-AUC: 0.9224432474801781
 Log-loss: 0.2987712181596724
 
+
 **=== Tuned Random Forest With Clusters ===**
               precision    recall  f1-score   support
 
-           0       0.96      0.86      0.91      2084
-           1       0.53      0.82      0.64       382
+           0       0.97      0.86      0.91      2084
+           1       0.52      0.83      0.64       382
 
     accuracy                           0.86      2466
-   macro avg       0.74      0.84      0.78      2466
+   macro avg       0.74      0.85      0.78      2466
 weighted avg       0.90      0.86      0.87      2466
 
-Optimal Threshold: 0.4016
-ROC-AUC: 0.9191521540332224
-Log-loss: 0.3020886686784614
+Optimal Threshold: 0.3949
+ROC-AUC: 0.9209094974424938
+Log-loss: 0.30281798086355294
 
 ## Comparison notes
 

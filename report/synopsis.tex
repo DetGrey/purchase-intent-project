@@ -1,0 +1,49 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{geometry}
+\geometry{margin=2.0cm}
+\usepackage{setspace}
+\setstretch{1.15}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+
+\setlength{\skip\footins}{1.5em}
+\begin{document}
+
+\begin{center}
+    \Large\textbf{Synopsis}\\[0.3cm]
+    \normalsize\textbf{Project Title:} Modeling Online Purchase Intent Through Behavioural Clustering and Classification
+    
+    \textbf{Authors:} Ane Novrup Larsen, Nathasja Skov Fink Nielsen
+\end{center}
+
+\section*{Problem Statement}
+E-commerce platforms attract thousands of daily visitors, yet only ~4\% complete a purchase\footnote{\href{https://doi.org/10.1016/j.jbusres.2016.04.040}{McDowell, W.C., Wilson, R.C., \& Kile, C. (2016). \textit{An Examination of Retail Website Design and Conversion Rate.} Journal of Business Research, 69(11), 4837–4842.}}. Traditional machine learning models that predict purchasing intention typically rely on raw session metrics such as time spent on pages, bounce rates, and product views.\footnote{\href{https://www.researchgate.net/publication/371183149_Clicking_through_the_Clickstream_A_Novel_Statistical_Modeling_Approach_to_Improve_Information_Usage_of_Clickstream_Data_by_E-Commerce_Entities}{Allenbrand, C. (2023). \textit{Clicking through the Clickstream.} Intelligent Information Management, 15(3), 180–215.}} However, online shoppers exhibit highly diverse behaviors. Research by Huseynov and Yıldırım (2016)\footnote{\href{https://www.researchgate.net/publication/311494916_Behavioral_Segmentation_Analysis_of_Online_Consumer_Audience_in_Turkey_by_Using_Real_E-commerce_Transaction_Data}{Huseynov, F., \& Yıldırım, S. (2016) \textit{Behavioural segmentation analysis of online consumer audience in Turkey by using real e-commerce transaction data.} International Journal of Economics and Business Research}, 14(1), 12--28.} categorises these visitors into five distinct segments: 'opportunist customers,' 'transient customers,' 'need-based shoppers,' 'skeptical newcomers,' and 'repetitive purchasers.' Consequently, many visitors simply browse without immediate intent to buy.
+
+\section*{Research Question}
+\textbf{Does segmenting online visitors based on their navigational engagement (Unsupervised Learning) improve the accuracy of predicting purchase intention (Supervised Learning) compared to using raw traffic metrics alone?}
+
+\section*{Proposed Approach}
+This project will use the \textit{Online Shoppers Purchasing Intention Dataset} from the UCI Machine Learning Repository\footnote{\href{https://archive.ics.uci.edu/dataset/468/online+shoppers+purchasing+intention+dataset}{UCI Machine Learning Repository – Online Shoppers Dataset}}, which contains session-level behavioural data such as page visit durations, bounce and exit rates, page values, special-day proximity, and visitor types.
+
+\vspace{1.0em}
+
+\noindent\textbf{1. Data Preparation:}
+The dataset will be preprocessed by One-Hot encoding categorical features, and standardising numeric variables. Given the rarity of purchase events, measures will be taken to prevent the model from biasing towards the majority class. Exploratory Data Analysis (EDA) will be conducted to understand behavioural patterns and class distribution between purchasing and non-purchasing sessions.
+
+\vspace{0.4em}
+
+\noindent\textbf{2. Unsupervised Learning (Segmentation):}
+We will primarily apply a K-Means clustering approach to identify distinct groups of visitors with similar browsing patterns. However, acknowledging that shoppers might form irregular (concave) groups, we may potentially evaluate DBSCAN as an alternative. To prevent data leakage, the clustering model will be fitted only on the training set, and the resulting centroids (in the case of K-Means) will be used to assign labels to the test set.
+
+\vspace{0.4em}
+
+\noindent\textbf{3. Supervised Learning (Prediction):}
+Two predictive models---one baseline (using raw behavioural metrics) and one enhanced (including cluster labels as an additional feature)---will be trained using Logistic Regression, Decision Trees, and Random Forest classifiers. Model performance will be assessed using standard evaluation metrics such as log-loss, Youden's Index, precision, recall, F1-score and ROC-AUC.
+
+\vspace{0.4em}
+
+\noindent\textbf{4. Evaluation}
+The comparison between models with and without behavioural segmentation will determine whether unsupervised segmentation contributes to improved predictive performance.
+
+\end{document}
